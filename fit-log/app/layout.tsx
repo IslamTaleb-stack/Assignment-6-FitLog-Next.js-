@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Oswald } from "next/font/google";
 import "./globals.css";
-import { PlanProvider } from "@/lib/PlanContext";
+import { PlanProvider } from "@/lib/PlanContext";  // ← Must import this!
 import Navbar from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -20,8 +20,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${oswald.variable}`}>
       <body className="font-sans bg-gray-950 text-white min-h-screen">
+        {/* PlanProvider MUST wrap everything */}
         <PlanProvider>
-          {/* Now Navbar shows on EVERY page! */}
           <Navbar />
           <main className="pt-16">{children}</main>
         </PlanProvider>
