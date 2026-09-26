@@ -1,50 +1,59 @@
-import Image from "next/image";  // ← Keep this import
+import Image from "next/image";
 import Link from "next/link";
 import type { Workout } from "@/lib/types";
 
 interface Props {
-  workout: Workout;
+    workout: Workout;
 }
 
 export default function WorkoutCard({ workout }: Props) {
-  return (
-    <Link href={`/workouts/${workout.id}`} className="block group">
-      <div className="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-lime-400/50 transition">
-        
-        {/* Card Image — with unoptimized */}
-        <div className="relative h-48 w-full">
-          <Image
-            src={workout.image}
-            alt={workout.name}
-            fill
-            unoptimized  // ← Magic line — no domain block!
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
+    return (
+        <Link href={`/workouts/${workout.id}`} className="block group">
+            <div className="bg-[#121212] rounded-lg overflow-hidden border-none">
+                {/* Image — fills full width, no rounding on top */}
+                <div className="relative h-40 w-full">
+                    <Image
+                        src={workout.image}
+                        alt={workout.name}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                    />
+                </div>
 
-        {/* Rest stays exactly the same */}
-        <div className="p-4">
-          <div className="flex flex-wrap gap-2 mb-3">
-            {workout.muscleGroups.map((muscle) => (
-              <span
-                key={muscle}
-                className="text-xs px-2 py-1 bg-gray-800 rounded-full uppercase"
-              >
-                {muscle}
-              </span>
-            ))}
-          </div>
+                {/* Content — exact Figma spacing */}
+                <div className="p-4">
+                    {/* Tags — multiple side-by-side, lime bg black text */}
+                    {/* Tags — shows 1, 2, or 3 exactly like Figma */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                        {workout.muscleGroups?.map((tag) => (
+                            <span
+                                key={tag}
+                                className="px-2 py-1 bg-[#CCFF00] text-black text-xs font-bold rounded"
+                            >
+                                {tag.toUpperCase()}
+                            </span>
+                        ))}
+                    </div>
 
-          <h3 className="font-bold uppercase text-lg mb-2">{workout.name}</h3>
-          <p className="text-gray-400 text-sm mb-3">{workout.equipment}</p>
+                    {/* Workout Name */}
+                    <h3 className="font-bold uppercase text-white text-sm mb-1">
+                        {workout.name}
+                    </h3>
 
-          <div className="flex gap-4 text-sm text-gray-300">
-            <span>⏱️ {workout.duration} min</span>
-            <span>🔥 {workout.caloriesBurned} kcal</span>
-            <span>⭐ {workout.rating}</span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
+                    {/* Equipment */}
+                    <p className="text-gray-400 text-xs mb-3">
+                        {workout.equipment}
+                    </p>
+
+                    {/* Stats — with icons exactly like Figma */}
+                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                        <span>⏱ {workout.duration} min</span>
+                        <span>🔥 {workout.caloriesBurned} kcal</span>
+                        <span>⭐ {workout.rating}</span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
 }

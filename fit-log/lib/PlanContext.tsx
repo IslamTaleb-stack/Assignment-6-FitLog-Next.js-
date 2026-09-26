@@ -1,5 +1,4 @@
 "use client";
-
 import { createContext, useContext, useState, ReactNode } from "react";
 import type { Workout } from "./types";
 
@@ -10,6 +9,13 @@ interface PlanContextType {
     addToSaved: (workout: Workout) => void;
     removeFromPlan: (id: number) => void;
     removeFromSaved: (id: number) => void;
+    clearPlan: () => void;
+    planTotal: {
+        count: number;
+        duration: number;
+        calories: number;
+        avgRating: string;
+    };
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
@@ -19,7 +25,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
     const [saved, setSaved] = useState<Workout[]>([]);
 
     function addToPlan(workout: Workout) {
-        if (plan.length >= 5) return; // max 5, no alert
+        if (plan.length >= 5) return; // max 5 workouts
         const exists = plan.find(w => w.id === workout.id);
         if (!exists) {
             setPlan([...plan, workout]);
@@ -41,6 +47,19 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         setSaved(saved.filter(w => w.id !== id));
     }
 
+    function clearPlan() {
+        setPlan([]);
+    }
+
+    const planTotal = {
+        count: plan.length,
+        duration: plan.reduce((sum, w) => sum + w.duration, 0),
+        calories: plan.reduce((sum, w) => sum + w.caloriesBurned, 0),
+        avgRating: plan.length
+            ? (plan.reduce((sum, w) => sum + w.rating, 0) / plan.length).toFixed(1)
+            : "0.0"
+    };
+
     return (
         <PlanContext.Provider value={{
             plan,
@@ -48,7 +67,9 @@ export function PlanProvider({ children }: { children: ReactNode }) {
             addToPlan,
             addToSaved,
             removeFromPlan,
-            removeFromSaved
+            removeFromSaved,
+            clearPlan,
+            planTotal
         }}>
             {children}
         </PlanContext.Provider>

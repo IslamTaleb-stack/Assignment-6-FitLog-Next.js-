@@ -1,136 +1,128 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
-import { getWorkoutById } from "@/lib/api";
-import { usePlan } from "@/lib/PlanContext";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { getAllWorkouts } from "@/lib/api";
 import type { Workout } from "@/lib/types";
+import { usePlan } from "@/lib/PlanContext";
 
 export default function WorkoutDetailPage() {
     const params = useParams();
-    const router = useRouter();
-    const { addToPlan, addToSaved } = usePlan();
-
+    const id = params.id as string;
     const [workout, setWorkout] = useState<Workout | null>(null);
     const [loading, setLoading] = useState(true);
+    const { addToPlan, addToSaved } = usePlan();
 
     useEffect(() => {
-        const fetchWorkout = async () => {
-            try {
-                const data = await getWorkoutById(params.id as string);
-                setWorkout(data);
-            } catch (err) {
-                console.log("Error loading workout:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+        getAllWorkouts().then((data) => {
+            const found = data.find((w) => String(w.id) === String(id));
+            setWorkout(found || null);
+            setLoading(false);
+        });
+    }, [id]);
 
-        fetchWorkout();
-    }, [params.id]);
-
-    if (loading) {
-        return <div className="p-12 text-center">Loading workout...</div>;
-    }
-
-    if (!workout) {
-        return <div className="p-12 text-center">Workout not found.</div>;
-    }
+    if (loading) return <div className="p-12 text-center text-gray-400">Loading…</div>;
+    if (!workout) return <div className="p-12 text-center text-gray-400">Workout not found</div>;
 
     return (
-        <div className="min-h-screen px-4 md:px-8 py-12">
-            {/* Back Button */}
-            <button
-                onClick={() => router.back()}
-                className="mb-6 text-lime-400 hover:text-lime-300"
-            >
-                ← Back to Workouts
-            </button>
+        <div className="pt-24 px-4 md:px-6 pb-16 max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 items-start">
 
-            <div className="grid md:grid-cols-2 gap-8">
-                {/* Left — Image */}
-                <div className="bg-gray-900 rounded-xl p-4">
+                {/* Left — Workout Image */}
+                <div className="relative rounded-lg overflow-hidden h-[420px]">
                     <Image
                         src={workout.image}
                         alt={workout.name}
-                        width={500}
-                        height={400}
+                        fill
                         unoptimized
-                        className="w-full h-auto rounded-lg object-cover"
+                        className="object-cover"
                     />
                 </div>
 
-                {/* Right — Info */}
-                <div className="space-y-4">
-                    <h1 className="text-3xl font-bold uppercase">{workout.name}</h1>
+                {/* Right — Info Panel */}
+                <div>
+                    {/* 1. NAME — Top, Bold */}
+                    <h1 className="text-2xl font-bold uppercase mb-2">{workout.name}</h1>
 
-                    <div className="flex flex-wrap gap-2">
-                        {workout.muscleGroups.map((muscle) => (
+                    {/* 2. SHORT DESCRIPTION */}
+                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                        {workout.description || "A compound press that builds chest thickness, triceps, and pressing power from a stable bench."}
+                    </p>
+
+                    {/* 3. TAGS */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                        {workout.muscleGroups?.map((tag) => (
                             <span
-                                key={muscle}
-                                className="px-3 py-1 bg-lime-400/10 text-lime-400 rounded-full text-sm"
+                                key={tag}
+                                className="px-2 py-1 bg-[#CCFF00] text-black text-xs font-bold rounded"
                             >
-                                {muscle}
+                                {tag.toUpperCase()}
                             </span>
                         ))}
                     </div>
 
-                    <p className="text-gray-400">{workout.description}</p>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 py-4">
-                        <div>
-                            <p className="text-gray-500 text-sm">Duration</p>
-                            <p className="font-bold">{workout.duration} min</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Calories</p>
-                            <p className="font-bold">{workout.caloriesBurned} kcal</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Sets</p>
-                            <p className="font-bold">{workout.sets}</p>
-                        </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Rating</p>
-                            <p className="font-bold">{workout.rating} / 5</p>
+                    {/* 4. DARK DETAILS BOX — Exact Figma */}
+                    <div className="bg-[#111418] rounded-lg overflow-hidden mb-6">
+                        <div className="divide-y divide-white/5">
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Equipment</span>
+                                <span className="text-white text-sm">{workout.equipment || "Barbell, Bench"}</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Difficulty</span>
+                                <span className="text-white text-sm">{workout.difficulty || "Intermediate"}</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Sets</span>
+                                <span className="text-white text-sm">{workout.sets || "4"}</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Reps</span>
+                                <span className="text-white text-sm">{workout.reps || "6–8"}</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Duration</span>
+                                <span className="text-white text-sm">{workout.duration} min</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Calories</span>
+                                <span className="text-white text-sm">{workout.caloriesBurned} kcal</span>
+                            </div>
+                            <div className="flex justify-between px-5 py-3">
+                                <span className="text-gray-500 text-xs uppercase tracking-wider">Rating</span>
+                                <span className="text-white text-sm">{workout.rating}</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <p className="text-gray-500 text-sm mb-1">Difficulty</p>
-                        <p className="font-bold">{workout.difficulty}</p>
+                    {/* 5. INSTRUCTIONS — Header white bold, list dark plain */}
+                    <div className="mb-8">
+                        <h3 className="text-xs uppercase text-white font-bold tracking-wider mb-2">Instructions</h3>
+                        <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside font-normal">
+                            <li>Lie on the bench with eyes under the bar and feet planted.</li>
+                            <li>Unrack with locked elbows and lower the bar to mid-chest.</li>
+                            <li>Press up in a straight line until elbows lock without bouncing.</li>
+                            <li>Keep shoulder blades pinched and a natural arch in the back.</li>
+                        </ol>
                     </div>
 
-                    <div>
-                        <p className="text-gray-500 text-sm mb-1">Reps</p>
-                        <p className="font-bold">{workout.reps}</p>
-                    </div>
-
-                    {/* Instructions */}
-                    <div className="pt-4">
-                        <h3 className="font-bold text-lg mb-2">Instructions</h3>
-                        <ul className="list-disc list-inside text-gray-400 space-y-2">
-                            {workout.instructions.map((step, index) => (
-                                <li key={index}>{step}</li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-4 pt-6">
+                    {/* 6. BUTTONS */}
+                    <div className="flex gap-3">
                         <button
                             onClick={() => addToPlan(workout)}
-                            className="bg-lime-400 text-black px-6 py-3 rounded font-semibold hover:bg-lime-300 transition"
+                            className="bg-[#CCFF00] text-black px-6 py-2.5 rounded font-semibold text-sm hover:bg-[#b3e600] transition"
                         >
-                            Add to Plan
+                            + Add to today's plan
                         </button>
                         <button
                             onClick={() => addToSaved(workout)}
-                            className="border border-gray-600 px-6 py-3 rounded font-semibold hover:bg-gray-800 transition"
+                            className="border border-gray-600 px-6 py-2.5 rounded font-semibold text-sm hover:border-white transition flex items-center gap-2"
                         >
-                            Save
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.315A.5.5 0 0 1 2 15V2z" />
+                            </svg>
+                            Save for later
                         </button>
                     </div>
                 </div>

@@ -1,40 +1,33 @@
-"use client";
+'use client'; // ← THIS LINE FIXES THE ERROR ✅
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { usePlan } from "@/lib/PlanContext"; // ← Must import!
-import Image from "next/image";
+import { usePlan } from "@/lib/PlanContext";
 
 export default function Navbar() {
-    const pathname = usePathname();
-    const { plan, saved } = usePlan(); // ← Must get these!
+    const { plan, saved } = usePlan();
 
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 bg-gray-900/95 border-b border-gray-800 px-4 md:px-6 py-3 flex items-center justify-between">
+        <nav className="fixed top-0 left-0 right-0 flex justify-between items-center px-6 py-4 bg-black/90 z-50 border-b border-gray-800">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-                <Image src="/assets/logo.png" alt="Logo" width={28} height={28} />
-                <span className="text-lg font-bold tracking-wider">FITLOG</span>
-            </Link>
+            <Link href="/" className="font-bold text-lg">FITLOG</Link>
 
-            {/* Links */}
-            <div className="hidden md:flex gap-8">
-                <Link href="/" className={pathname === "/" ? "text-lime-400 font-semibold" : "text-gray-300 hover:text-white"}>
-                    Workout
-                </Link>
-                <Link href="/my-plan" className={pathname === "/my-plan" ? "text-lime-400 font-semibold" : "text-gray-300 hover:text-white"}>
-                    My Plan
-                </Link>
+            {/* Middle Links */}
+            <div className="flex gap-8">
+                <Link href="/" className="text-sm hover:text-[#CCFF00] transition-colors">Workouts</Link>
+                <Link href="/my-plan" className="text-sm hover:text-[#CCFF00] transition-colors">My Plan</Link>
             </div>
 
-            {/* Counters — THESE UPDATE! */}
+            {/* Right Side — Counters */}
             <div className="flex gap-3">
-                <Link href="/my-plan" className="px-3 py-1 rounded-full text-sm bg-lime-400 text-black font-medium">
+                <Link
+                    href="/my-plan"
+                    className="bg-[#CCFF00] text-black px-3 py-1 rounded-full text-xs font-semibold"
+                >
                     Plan {plan.length}
                 </Link>
-                <Link href="/my-plan" className="px-3 py-1 rounded-full text-sm border border-gray-500 text-gray-300">
+                <span className="border border-[#CCFF00]/40 text-[#CCFF00] px-3 py-1 rounded-full text-xs font-semibold">
                     Saved {saved.length}
-                </Link>
+                </span>
             </div>
         </nav>
     );
