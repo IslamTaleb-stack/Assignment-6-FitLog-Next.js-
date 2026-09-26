@@ -1,10 +1,11 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Workout } from "./types";
 
 interface PlanContextType {
     plan: Workout[];
     saved: Workout[];
+    isLoaded: boolean;
     addToPlan: (workout: Workout) => void;
     addToSaved: (workout: Workout) => void;
     removeFromPlan: (id: number) => void;
@@ -21,30 +22,61 @@ interface PlanContextType {
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
 
 export function PlanProvider({ children }: { children: ReactNode }) {
-    const [plan, setPlan] = useState<Workout[]>([]);
-    const [saved, setSaved] = useState<Workout[]>([]);
+    // ✅ Initialize DIRECTLY from localStorage — no delay
+    const [plan, setPlan] = useState<Workout[]>(() => {
+        if (typeof window === "undefined") return [];
+        try {
+            const data = localStorage.getItem("fitlog-plan");
+            return data ? JSON.parse(data) : [];
+        } catch { return []; }
+    });
+
+    const [saved, setSaved] = useState<Workout[]>(() => {
+        if (typeof window === "undefined") return [];
+        try {
+            const data = localStorage.getItem("fitlog-saved");
+            return data ? JSON.parse(data) : [];
+        } catch { return []; }
+    });
+
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        setIsLoaded(true);
+    }, []);
+
+    // ✅ Auto-save whenever data changes
+    useEffect(() => {
+        if (!isLoaded) return;
+        localStorage.setItem("fitlog-plan", JSON.stringify(plan));
+    }, [plan, isLoaded]);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        localStorage.setItem("fitlog-saved", JSON.stringify(saved));
+    }, [saved, isLoaded]);
 
     function addToPlan(workout: Workout) {
-        if (plan.length >= 5) return; // max 5 workouts
-        const exists = plan.find(w => w.id === workout.id);
-        if (!exists) {
-            setPlan([...plan, workout]);
-        }
+        setPlan((prev) => {
+            if (prev.length >= 5) return prev;
+            if (prev.find((w) => w.id === workout.id)) return prev;
+            return [...prev, workout];
+        });
     }
 
     function addToSaved(workout: Workout) {
-        const exists = saved.find(w => w.id === workout.id);
-        if (!exists) {
-            setSaved([...saved, workout]);
-        }
+        setSaved((prev) => {
+            if (prev.find((w) => w.id === workout.id)) return prev;
+            return [...prev, workout];
+        });
     }
 
     function removeFromPlan(id: number) {
-        setPlan(plan.filter(w => w.id !== id));
+        setPlan((prev) => prev.filter((w) => w.id !== id));
     }
 
     function removeFromSaved(id: number) {
-        setSaved(saved.filter(w => w.id !== id));
+        setSaved((prev) => prev.filter((w) => w.id !== id));
     }
 
     function clearPlan() {
@@ -57,20 +89,23 @@ export function PlanProvider({ children }: { children: ReactNode }) {
         calories: plan.reduce((sum, w) => sum + w.caloriesBurned, 0),
         avgRating: plan.length
             ? (plan.reduce((sum, w) => sum + w.rating, 0) / plan.length).toFixed(1)
-            : "0.0"
+            : "0.0",
     };
 
     return (
-        <PlanContext.Provider value={{
-            plan,
-            saved,
-            addToPlan,
-            addToSaved,
-            removeFromPlan,
-            removeFromSaved,
-            clearPlan,
-            planTotal
-        }}>
+        <PlanContext.Provider
+            value={{
+                plan,
+                saved,
+                isLoaded,
+                addToPlan,
+                addToSaved,
+                removeFromPlan,
+                removeFromSaved,
+                clearPlan,
+                planTotal,
+            }}
+        >
             {children}
         </PlanContext.Provider>
     );
@@ -78,8 +113,6 @@ export function PlanProvider({ children }: { children: ReactNode }) {
 
 export function usePlan() {
     const context = useContext(PlanContext);
-    if (!context) {
-        throw new Error("usePlan must be used inside PlanProvider");
-    }
+    if (!context) throw new Error("usePlan must be used inside PlanProvider");
     return context;
 }
