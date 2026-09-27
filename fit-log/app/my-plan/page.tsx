@@ -35,7 +35,6 @@ export default function MyPlanPage() {
 
     const hasItems = displayList.length > 0;
 
-    // ✅ MARK AS DONE — Only change button + show toast. DO NOT remove card.
     const handleMarkDone = (id: number, name: string) => {
         if (!doneIds.includes(id)) {
             setDoneIds(prev => [...prev, id]);
@@ -44,7 +43,6 @@ export default function MyPlanPage() {
         }
     };
 
-    // ✅ REMOVE — Only this removes the card + show toast
     const handleRemove = (id: number, name: string) => {
         if (activeTab === "plan") {
             removeFromPlan(id);
@@ -65,7 +63,7 @@ export default function MyPlanPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0A0A0F] text-white">
+        <div className="min-h-screen bg-[#0A0A0F] text-white pt-20">
             {toast && <Toast message={toast} onClose={() => setToast(null)} />}
 
             <div className="max-w-6xl mx-auto px-4 py-6">
@@ -198,6 +196,7 @@ function WorkoutRow({
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
+                {/* ✅ ONE View Details — ALWAYS shows for BOTH tabs */}
                 <Link
                     href={`/workouts/${workout.id}`}
                     className="cursor-pointer text-xs text-gray-400 hover:text-white px-2.5 py-1.5 border border-gray-600 rounded transition"
@@ -205,9 +204,8 @@ function WorkoutRow({
                     View Details
                 </Link>
 
-                {activeTab === "plan" ? (
+                {activeTab === "plan" && (
                     <>
-                        {/* ✅ MARK AS DONE — Button changes + Toast — CARD STAYS HERE */}
                         <button
                             onClick={onMarkDone}
                             className={`cursor-pointer px-3 py-1.5 rounded text-xs font-semibold transition whitespace-nowrap ${isMarkedDone
@@ -217,33 +215,16 @@ function WorkoutRow({
                         >
                             {isMarkedDone ? "✓ Done" : "Mark as Done"}
                         </button>
-
-                        {/* ✅ REMOVE BUTTON — ONLY THIS removes the card */}
-                        <button
-                            onClick={onRemove}
-                            className="cursor-pointer text-gray-500 hover:text-red-400 text-sm w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10 transition"
-                            title="Remove"
-                        >
-                            ✕
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Link
-                            href={`/workouts/${workout.id}`}
-                            className="cursor-pointer text-xs text-gray-400 hover:text-white px-2.5 py-1.5 border border-gray-600 rounded transition"
-                        >
-                            View Details
-                        </Link>
-                        <button
-                            onClick={onRemove}
-                            className="cursor-pointer text-gray-500 hover:text-red-400 text-sm w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10 transition"
-                            title="Remove"
-                        >
-                            ✕
-                        </button>
                     </>
                 )}
+
+                <button
+                    onClick={onRemove}
+                    className="cursor-pointer text-gray-500 hover:text-red-400 text-sm w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-500/10 transition"
+                    title="Remove"
+                >
+                    ✕
+                </button>
             </div>
         </div>
     );

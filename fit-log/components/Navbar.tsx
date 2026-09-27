@@ -1,4 +1,4 @@
-'use client'; // ← THIS LINE FIXES THE ERROR ✅
+'use client'; 
 
 import Link from "next/link";
 import { usePlan } from "@/lib/PlanContext";
